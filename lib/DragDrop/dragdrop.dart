@@ -178,10 +178,7 @@ class _DragdropState extends State<Dragdrop> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: weekDates.map((date) {
-                                bool isSelected = date.year ==
-                                        _selectedDateString!.year &&
-                                    date.month == _selectedDateString!.month &&
-                                    date.day == _selectedDateString!.day;
+                                final dateKey = _format.format(date);
 
                                 return Column(
                                   children: [
@@ -190,24 +187,25 @@ class _DragdropState extends State<Dragdrop> {
                                         .substring(0, 1)),
                                     const SizedBox(height: 4),
                                     Container(
-                                        margin:
-                                            const EdgeInsets.symmetric(horizontal: 2),
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 2),
                                         width: 40,
                                         height: 72,
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(30),
                                             color: Colors.white,
-                                            boxShadow: isSelected
-                                                ? [
-                                                    const BoxShadow(
-                                                      color: Color.fromARGB(
-                                                          255, 234, 45, 45),
-                                                      blurRadius: 4,
-                                                      offset: Offset(0, 1),
-                                                    )
-                                                  ]
-                                                : null),
+                                            boxShadow:
+                                                dateToImageMap.containsKey(dateKey)
+                                                    ? [
+                                                        const BoxShadow(
+                                                          color: Color.fromARGB(
+                                                              255, 234, 45, 45),
+                                                          blurRadius: 4,
+                                                          offset: Offset(0, 1),
+                                                        )
+                                                      ]
+                                                    : null),
                                         child: Column(
                                           children: [
                                             const SizedBox(
@@ -225,29 +223,36 @@ class _DragdropState extends State<Dragdrop> {
                                                 onAcceptWithDetails: (details) {
                                               setState(() {
                                                 dateToImageMap[
-                                                        _format.format(date)] =
+                                                        dateKey] =
                                                     details.data;
                                               });
                                             }, builder: (context, candidateData,
                                                     rejectedData) {
-
-                                              final dateKey = _format.format(date);
+                                              
                                               return CircleAvatar(
                                                 radius: 16,
-                                                backgroundColor: const Color.fromARGB(
-                                                    255, 89, 88, 88),
-                                                    backgroundImage: dateToImageMap[dateKey] !=
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 89, 88, 88),
+                                                backgroundImage: dateToImageMap[
+                                                            dateKey] !=
                                                         null
-                                                    ? NetworkImage(dateToImageMap[dateKey].toString()):null,
-                                                child: dateToImageMap[dateKey] !=
-                                                        null
-                                                    ? null
-                                                    : const Icon(Icons.image,
-                                                        color: Color.fromARGB(
-                                                            202,
-                                                            207,
-                                                            205,
-                                                            205)),
+                                                    ? NetworkImage(
+                                                        dateToImageMap[dateKey]
+                                                            .toString())
+                                                    : null,
+                                                child:
+                                                    dateToImageMap[dateKey] !=
+                                                            null
+                                                        ? null
+                                                        : const Icon(
+                                                            Icons.image,
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    202,
+                                                                    207,
+                                                                    205,
+                                                                    205)),
                                               );
                                             }),
                                           ],
@@ -327,6 +332,8 @@ class _DragdropState extends State<Dragdrop> {
                             childAspectRatio: 1),
                     itemBuilder: (context, index) {
                       final img = testImageUrls[index];
+                      bool hasSelected = dateToImageMap.containsValue(img);
+                      
                       return Draggable(
                           data: img,
                           feedback: Opacity(
@@ -346,12 +353,35 @@ class _DragdropState extends State<Dragdrop> {
                                 color: const Color.fromARGB(163, 158, 158, 158),
                                 borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              img,
-                              fit: BoxFit.cover,
-                            ),
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  img,
+                                  fit: BoxFit.cover,
+                                  width :double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+                              if (hasSelected)
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        
+                                        child: Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                            ],
                           ));
                     }),
               ),
